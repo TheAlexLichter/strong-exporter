@@ -106,7 +106,8 @@ export function transformLogs(logs: readonly RawLog[], measurementMap: Map<strin
         timezone: log.timezoneId ?? null,
         exercises,
       };
-    });
+    })
+    .reverse();
 }
 
 // ── Live implementation ──────────────────────────────────────────────────────
