@@ -9,7 +9,8 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "start": "node --env-file-if-exists=.env src/index.ts"
+    "start": "node --env-file-if-exists=.env src/index.ts",
+    "prepare": "lefthook install"
   },
   "dependencies": {
     "@effect/cli": "^0.73.0",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "lefthook": "^2.1.1",
     "typescript": "~5.9.3",
     "vite-plus": "latest"
   },
