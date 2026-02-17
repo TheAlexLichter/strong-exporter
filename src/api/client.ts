@@ -186,40 +186,45 @@ export const makeStrongClientLive = (
       // Fetch all exercise definitions → id-to-name lookup map
       const fetchMeasurements = (
         token: string,
+        userId: string,
       ): Effect.Effect<Map<string, string>, StrongApiError> =>
         Effect.gen(function* () {
           const map = new Map<string, string>();
-          let page = 0;
 
-          while (true) {
-            const url = new URL("api/measurements", backend);
-            url.searchParams.set("page", String(page));
+          const fetchFromEndpoint = (baseUrl: string) =>
+            Effect.gen(function* () {
+              let page = 0;
+              while (true) {
+                const url = new URL(baseUrl, backend);
+                url.searchParams.set("page", String(page));
 
-            const response = yield* httpClient.execute(authedGet(url.toString(), token));
+                const response = yield* httpClient.execute(authedGet(url.toString(), token));
+                if (response.status !== 200) break;
 
-            if (response.status !== 200) break;
+                const json = yield* response.json;
+                const data = json as {
+                  _embedded?: {
+                    measurement?: Array<{
+                      id: string;
+                      name?: { en?: string | null; custom?: string | null };
+                    }>;
+                  };
+                  _links?: { next?: unknown };
+                };
 
-            const json = yield* response.json;
-            const data = json as {
-              _embedded?: {
-                measurement?: Array<{
-                  id: string;
-                  name?: { en?: string | null; custom?: string | null };
-                }>;
-              };
-              _links?: { next?: unknown };
-              total?: number;
-            };
+                const measurements = data._embedded?.measurement ?? [];
+                for (const m of measurements) {
+                  const name = m.name?.custom ?? m.name?.en ?? m.id;
+                  map.set(m.id, name);
+                }
 
-            const measurements = data._embedded?.measurement ?? [];
-            for (const m of measurements) {
-              const name = m.name?.en ?? m.name?.custom ?? m.id;
-              map.set(m.id, name);
-            }
+                if (!data._links?.next || measurements.length === 0) break;
+                page++;
+              }
+            });
 
-            if (!data._links?.next || map.size >= (data.total ?? Infinity)) break;
-            page++;
-          }
+          yield* fetchFromEndpoint("api/measurements");
+          yield* fetchFromEndpoint(`api/users/${userId}/measurements`);
 
           return map;
         }).pipe(
@@ -291,7 +296,7 @@ export const makeStrongClientLive = (
           const { accessToken, userId } = yield* login(credentials);
 
           const [measurementMap, logs] = yield* Effect.all([
-            fetchMeasurements(accessToken),
+            fetchMeasurements(accessToken, userId),
             fetchWorkoutLogs(accessToken, userId),
           ]);
 
