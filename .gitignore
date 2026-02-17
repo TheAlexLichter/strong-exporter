@@ -1,0 +1,14 @@
+node_modules/
+*.log
+.env
+
+# Exports directory
+exports/
+
+# Export files (but keep package.json and tsconfig.json)
+*.json
+!package.json
+!tsconfig.json
+
+# CSV exports
+*.csv
