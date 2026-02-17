@@ -2,12 +2,16 @@ import type { ExportData, Workout } from "./api/types.ts";
 
 export const toCSV = (data: ExportData): string => {
   const lines: string[] = [
-    "date,workoutName,exerciseName,setNumber,weightKg,reps,rpe,distance,duration,completed",
+    "date,workoutName,exerciseName,setNumber,weightKg,reps,rpe,distance,duration,status",
   ];
 
   for (const workout of data.workouts) {
     for (const exercise of workout.exercises) {
-      exercise.sets.forEach((set, i) => {
+      const allSets = [
+        ...exercise.completedSets.map((s) => ({ ...s, status: "completed" })),
+        ...exercise.skippedSets.map((s) => ({ ...s, status: "skipped" })),
+      ];
+      allSets.forEach((set, i) => {
         lines.push(
           [
             workout.startDate ?? "",
@@ -19,7 +23,7 @@ export const toCSV = (data: ExportData): string => {
             set.rpe ?? "",
             set.distance ?? "",
             set.duration ?? "",
-            set.completed ?? "",
+            set.status,
           ].join(","),
         );
       });

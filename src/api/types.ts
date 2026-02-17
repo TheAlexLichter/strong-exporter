@@ -18,13 +18,13 @@ export interface WorkoutSet {
   rpe: number | null;
   distance: number | null;
   duration: string | null;
-  completed: boolean | null;
 }
 
 // An exercise logged in a workout
 export interface WorkoutExercise {
   name: string;
-  sets: WorkoutSet[];
+  completedSets: WorkoutSet[];
+  skippedSets: WorkoutSet[];
 }
 
 // A complete workout session

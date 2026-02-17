@@ -152,7 +152,8 @@ const exportCommand = Command.make(
       const data = { ...raw, totalWorkouts: filteredWorkouts.length, workouts: filteredWorkouts };
 
       const totalSets = data.workouts.reduce(
-        (sum, w) => sum + w.exercises.reduce((s, e) => s + e.sets.length, 0),
+        (sum, w) =>
+          sum + w.exercises.reduce((s, e) => s + e.completedSets.length + e.skippedSets.length, 0),
         0,
       );
 

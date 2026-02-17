@@ -22,11 +22,13 @@ describe("parseSet", () => {
         isCompleted: true,
       }),
     ).toEqual({
-      weightKg: 100,
-      reps: 5,
-      rpe: null,
-      distance: null,
-      duration: null,
+      set: {
+        weightKg: 100,
+        reps: 5,
+        rpe: null,
+        distance: null,
+        duration: null,
+      },
       completed: true,
     });
   });
@@ -38,14 +40,14 @@ describe("parseSet", () => {
         { cellType: "REPS", value: "8" },
       ],
     });
-    expect(result?.weightKg).toBe(22.5);
-    expect(result?.reps).toBe(8);
+    expect(result?.set.weightKg).toBe(22.5);
+    expect(result?.set.reps).toBe(8);
   });
 
   test("parses OTHER_WEIGHT and WEIGHTED_BODYWEIGHT cell types", () => {
     for (const cellType of ["OTHER_WEIGHT", "WEIGHTED_BODYWEIGHT"] as const) {
       const result = parseSet({ cells: [{ cellType, value: "10" }] });
-      expect(result?.weightKg).toBe(10);
+      expect(result?.set.weightKg).toBe(10);
     }
   });
 
@@ -57,27 +59,29 @@ describe("parseSet", () => {
         { cellType: "RPE", value: "8.5" },
       ],
     });
-    expect(result?.rpe).toBe(8.5);
+    expect(result?.set.rpe).toBe(8.5);
   });
 
   test("parses distance", () => {
     const result = parseSet({ cells: [{ cellType: "DISTANCE", value: "5.0" }] });
-    expect(result?.distance).toBe(5.0);
+    expect(result?.set.distance).toBe(5.0);
   });
 
   test("parses duration", () => {
     const result = parseSet({ cells: [{ cellType: "DURATION", value: "00:30:00" }] });
-    expect(result?.duration).toBe("00:30:00");
+    expect(result?.set.duration).toBe("00:30:00");
   });
 
   test("nulls optional fields when cells are absent", () => {
     const result = parseSet({ cells: [{ cellType: "REPS", value: "10" }] });
     expect(result).toEqual({
-      weightKg: null,
-      reps: 10,
-      rpe: null,
-      distance: null,
-      duration: null,
+      set: {
+        weightKg: null,
+        reps: 10,
+        rpe: null,
+        distance: null,
+        duration: null,
+      },
       completed: null,
     });
   });
@@ -122,14 +126,14 @@ describe("transformLogs", () => {
     expect(workout.id).toBe("log-1");
     expect(workout.exercises).toHaveLength(1);
     expect(workout.exercises[0].name).toBe("Squat (Barbell)");
-    expect(workout.exercises[0].sets[0]).toEqual({
+    expect(workout.exercises[0].completedSets[0]).toEqual({
       weightKg: 100,
       reps: 5,
       rpe: null,
       distance: null,
       duration: null,
-      completed: true,
     });
+    expect(workout.exercises[0].skippedSets).toHaveLength(0);
   });
 
   test("filters out non-WORKOUT/LOG logTypes", () => {
@@ -160,6 +164,38 @@ describe("transformLogs", () => {
     });
     const [workout] = transformLogs([log], measurementMap);
     expect(workout.exercises).toHaveLength(0);
+  });
+
+  test("splits completed and skipped sets correctly", () => {
+    const log = makeLog({
+      _embedded: {
+        cellSetGroup: [
+          {
+            _links: { measurement: { href: "/api/measurements/abc123" } },
+            cellSets: [
+              {
+                cells: [
+                  { cellType: "BARBELL_WEIGHT", value: "100" },
+                  { cellType: "REPS", value: "5" },
+                ],
+                isCompleted: true,
+              },
+              {
+                cells: [
+                  { cellType: "BARBELL_WEIGHT", value: "110" },
+                  { cellType: "REPS", value: "3" },
+                ],
+                isCompleted: false,
+              },
+            ],
+          },
+        ],
+      },
+    });
+    const [workout] = transformLogs([log], measurementMap);
+    expect(workout.exercises[0].completedSets).toHaveLength(1);
+    expect(workout.exercises[0].skippedSets).toHaveLength(1);
+    expect(workout.exercises[0].skippedSets[0].weightKg).toBe(110);
   });
 
   test("uses custom name when en name is absent", () => {

@@ -64,7 +64,7 @@ const WEIGHT_CELL_TYPES = new Set([
   "WEIGHTED_BODYWEIGHT",
 ]);
 
-export function parseSet(cellSet: CellSet): WorkoutSet | null {
+export function parseSet(cellSet: CellSet): { set: WorkoutSet; completed: boolean | null } | null {
   const types = cellSet.cells.map((c) => c.cellType);
   if (types.includes("REST_TIMER") || types.includes("NOTE")) return null;
 
@@ -75,11 +75,13 @@ export function parseSet(cellSet: CellSet): WorkoutSet | null {
   const durationCell = cellSet.cells.find((c) => c.cellType === "DURATION");
 
   return {
-    weightKg: weightCell?.value ? parseFloat(weightCell.value) : null,
-    reps: repsCell?.value ? parseInt(repsCell.value, 10) : null,
-    rpe: rpeCell?.value ? parseFloat(rpeCell.value) : null,
-    distance: distanceCell?.value ? parseFloat(distanceCell.value) : null,
-    duration: durationCell?.value ?? null,
+    set: {
+      weightKg: weightCell?.value ? parseFloat(weightCell.value) : null,
+      reps: repsCell?.value ? parseInt(repsCell.value, 10) : null,
+      rpe: rpeCell?.value ? parseFloat(rpeCell.value) : null,
+      distance: distanceCell?.value ? parseFloat(distanceCell.value) : null,
+      duration: durationCell?.value ?? null,
+    },
     completed: cellSet.isCompleted ?? null,
   };
 }
@@ -96,10 +98,14 @@ export function transformLogs(
           const measurementHref = group._links?.measurement?.href ?? "";
           const measurementId = measurementHref.split("/").pop() ?? "";
           const name = measurementMap.get(measurementId) ?? "Unknown";
-          const sets = group.cellSets.map(parseSet).filter((s): s is WorkoutSet => s !== null);
-          return { name, sets };
+          const parsed = group.cellSets
+            .map(parseSet)
+            .filter((s): s is { set: WorkoutSet; completed: boolean | null } => s !== null);
+          const completedSets = parsed.filter((p) => p.completed !== false).map((p) => p.set);
+          const skippedSets = parsed.filter((p) => p.completed === false).map((p) => p.set);
+          return { name, completedSets, skippedSets };
         })
-        .filter((e) => e.sets.length > 0);
+        .filter((e) => e.completedSets.length + e.skippedSets.length > 0);
 
       return {
         id: log.id,

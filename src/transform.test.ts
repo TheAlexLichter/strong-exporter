@@ -13,7 +13,8 @@ const makeWorkout = (startDate: string | null, overrides: Partial<Workout> = {})
   exercises: [
     {
       name: "Bench Press (Barbell)",
-      sets: [{ weightKg: 80, reps: 5, rpe: null, distance: null, duration: null, completed: true }],
+      completedSets: [{ weightKg: 80, reps: 5, rpe: null, distance: null, duration: null }],
+      skippedSets: [],
     },
   ],
   ...overrides,
@@ -76,7 +77,7 @@ describe("toCSV", () => {
   test("includes the correct header row", () => {
     const csv = toCSV(makeExportData([]));
     expect(csv.split("\n")[0]).toBe(
-      "date,workoutName,exerciseName,setNumber,weightKg,reps,rpe,distance,duration,completed",
+      "date,workoutName,exerciseName,setNumber,weightKg,reps,rpe,distance,duration,status",
     );
   });
 
@@ -85,15 +86,46 @@ describe("toCSV", () => {
       exercises: [
         {
           name: "Squat",
-          sets: [
-            { weightKg: 100, reps: 5, rpe: null, distance: null, duration: null, completed: true },
-            { weightKg: 110, reps: 3, rpe: null, distance: null, duration: null, completed: true },
+          completedSets: [
+            { weightKg: 100, reps: 5, rpe: null, distance: null, duration: null },
+            { weightKg: 110, reps: 3, rpe: null, distance: null, duration: null },
           ],
+          skippedSets: [],
         },
       ],
     });
     const lines = toCSV(makeExportData([workout])).split("\n");
     expect(lines).toHaveLength(3); // header + 2 sets
+  });
+
+  test("outputs completed sets before skipped sets within an exercise", () => {
+    const workout = makeWorkout("2026-01-15T10:00:00Z", {
+      exercises: [
+        {
+          name: "Squat",
+          completedSets: [{ weightKg: 80, reps: 8, rpe: null, distance: null, duration: null }],
+          skippedSets: [{ weightKg: 100, reps: 5, rpe: null, distance: null, duration: null }],
+        },
+      ],
+    });
+    const lines = toCSV(makeExportData([workout])).split("\n");
+    expect(lines[1].split(",")[4]).toBe("80"); // completed set first
+    expect(lines[2].split(",")[4]).toBe("100"); // skipped set second
+  });
+
+  test("status column is 'completed' or 'skipped'", () => {
+    const workout = makeWorkout("2026-01-15T10:00:00Z", {
+      exercises: [
+        {
+          name: "Squat",
+          completedSets: [{ weightKg: 80, reps: 8, rpe: null, distance: null, duration: null }],
+          skippedSets: [{ weightKg: 100, reps: 5, rpe: null, distance: null, duration: null }],
+        },
+      ],
+    });
+    const lines = toCSV(makeExportData([workout])).split("\n");
+    expect(lines[1].split(",")[9]).toBe("completed");
+    expect(lines[2].split(",")[9]).toBe("skipped");
   });
 
   test("set numbers are 1-indexed", () => {
@@ -108,9 +140,8 @@ describe("toCSV", () => {
       exercises: [
         {
           name: "Curl, Barbell",
-          sets: [
-            { weightKg: 20, reps: 10, rpe: null, distance: null, duration: null, completed: true },
-          ],
+          completedSets: [{ weightKg: 20, reps: 10, rpe: null, distance: null, duration: null }],
+          skippedSets: [],
         },
       ],
     });
@@ -130,16 +161,16 @@ describe("toCSV", () => {
       exercises: [
         {
           name: "Run",
-          sets: [
+          completedSets: [
             {
               weightKg: null,
               reps: null,
               rpe: null,
               distance: 5.0,
               duration: "00:30:00",
-              completed: true,
             },
           ],
+          skippedSets: [],
         },
       ],
     });
