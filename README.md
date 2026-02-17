@@ -27,14 +27,14 @@ vp run start export [options]
 
 ### Options
 
-| Option | Alias | Description | Default |
-|---|---|---|---|
-| `--username` | `-u` | Strong account email (or `STRONG_USER`) | |
-| `--password` | `-p` | Strong account password (or `STRONG_PASS`) | prompts |
-| `--from` | | Start date, inclusive (e.g. `2026-01-01`) | 30 days ago |
-| `--to` | | End date, inclusive (e.g. `2026-02-17`) | today |
-| `--format` | | `json` or `csv` | `json` |
-| `--output` | `-o` | Output file path | `exports/strong-export-YYYY-MM-DD.json` |
+| Option       | Alias | Description                                | Default                                 |
+| ------------ | ----- | ------------------------------------------ | --------------------------------------- |
+| `--username` | `-u`  | Strong account email (or `STRONG_USER`)    |                                         |
+| `--password` | `-p`  | Strong account password (or `STRONG_PASS`) | prompts                                 |
+| `--from`     |       | Start date, inclusive (e.g. `2026-01-01`)  | 30 days ago                             |
+| `--to`       |       | End date, inclusive (e.g. `2026-02-17`)    | today                                   |
+| `--format`   |       | `json` or `csv`                            | `json`                                  |
+| `--output`   | `-o`  | Output file path                           | `exports/strong-export-YYYY-MM-DD.json` |
 
 ### Examples
 

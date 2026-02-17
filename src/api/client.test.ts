@@ -21,7 +21,14 @@ describe("parseSet", () => {
         ],
         isCompleted: true,
       }),
-    ).toEqual({ weightKg: 100, reps: 5, rpe: null, distance: null, duration: null, completed: true });
+    ).toEqual({
+      weightKg: 100,
+      reps: 5,
+      rpe: null,
+      distance: null,
+      duration: null,
+      completed: true,
+    });
   });
 
   test("parses dumbbell weight", () => {
@@ -65,7 +72,14 @@ describe("parseSet", () => {
 
   test("nulls optional fields when cells are absent", () => {
     const result = parseSet({ cells: [{ cellType: "REPS", value: "10" }] });
-    expect(result).toEqual({ weightKg: null, reps: 10, rpe: null, distance: null, duration: null, completed: null });
+    expect(result).toEqual({
+      weightKg: null,
+      reps: 10,
+      rpe: null,
+      distance: null,
+      duration: null,
+      completed: null,
+    });
   });
 
   test("nulls completed when isCompleted is absent", () => {

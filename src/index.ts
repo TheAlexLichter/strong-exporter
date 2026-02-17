@@ -73,7 +73,9 @@ const formatOption = Options.text("format").pipe(
 );
 
 const fromOption = Options.text("from").pipe(
-  Options.withDescription("Start date inclusive (ISO date, e.g. 2026-01-01). Defaults to 30 days ago."),
+  Options.withDescription(
+    "Start date inclusive (ISO date, e.g. 2026-01-01). Defaults to 30 days ago.",
+  ),
   Options.optional,
 );
 
@@ -138,7 +140,11 @@ const exportCommand = Command.make(
         ? new Date(from.value)
         : new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       const toDate = Option.isSome(to)
-        ? (() => { const d = new Date(to.value); d.setUTCHours(23, 59, 59, 999); return d; })()
+        ? (() => {
+            const d = new Date(to.value);
+            d.setUTCHours(23, 59, 59, 999);
+            return d;
+          })()
         : now;
 
       const filteredWorkouts = filterByDateRange(raw.workouts, fromDate, toDate);
@@ -168,7 +174,9 @@ const exportCommand = Command.make(
       fs.writeFileSync(finalPath, content);
 
       const fmtDate = (d: Date) => d.toISOString().split("T")[0];
-      yield* Console.log(`\nExported ${data.totalWorkouts} workouts (${totalSets} sets) from ${fmtDate(fromDate)} to ${fmtDate(toDate)}.`);
+      yield* Console.log(
+        `\nExported ${data.totalWorkouts} workouts (${totalSets} sets) from ${fmtDate(fromDate)} to ${fmtDate(toDate)}.`,
+      );
       yield* Console.log(`Saved to: ${finalPath}`);
     }).pipe(
       Effect.catchTag("StrongAuthError", (e) =>

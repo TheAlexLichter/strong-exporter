@@ -84,7 +84,10 @@ export function parseSet(cellSet: CellSet): WorkoutSet | null {
   };
 }
 
-export function transformLogs(logs: readonly RawLog[], measurementMap: Map<string, string>): Workout[] {
+export function transformLogs(
+  logs: readonly RawLog[],
+  measurementMap: Map<string, string>,
+): Workout[] {
   return logs
     .filter((log) => log.logType === "WORKOUT" || log.logType === "LOG")
     .map((log) => {

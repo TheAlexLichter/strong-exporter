@@ -105,7 +105,14 @@ describe("toCSV", () => {
   test("quotes workout and exercise names containing commas", () => {
     const workout = makeWorkout("2026-01-15T10:00:00Z", {
       name: "Push, Pull",
-      exercises: [{ name: "Curl, Barbell", sets: [{ weightKg: 20, reps: 10, rpe: null, distance: null, duration: null, completed: true }] }],
+      exercises: [
+        {
+          name: "Curl, Barbell",
+          sets: [
+            { weightKg: 20, reps: 10, rpe: null, distance: null, duration: null, completed: true },
+          ],
+        },
+      ],
     });
     const row = toCSV(makeExportData([workout])).split("\n")[1];
     expect(row).toContain('"Push, Pull"');
@@ -123,11 +130,22 @@ describe("toCSV", () => {
       exercises: [
         {
           name: "Run",
-          sets: [{ weightKg: null, reps: null, rpe: null, distance: 5.0, duration: "00:30:00", completed: true }],
+          sets: [
+            {
+              weightKg: null,
+              reps: null,
+              rpe: null,
+              distance: 5.0,
+              duration: "00:30:00",
+              completed: true,
+            },
+          ],
         },
       ],
     });
-    const cols = toCSV(makeExportData([workout])).split("\n")[1].split(",");
+    const cols = toCSV(makeExportData([workout]))
+      .split("\n")[1]
+      .split(",");
     expect(cols[4]).toBe(""); // weightKg
     expect(cols[5]).toBe(""); // reps
   });
