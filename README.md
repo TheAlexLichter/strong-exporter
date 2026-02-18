@@ -71,10 +71,11 @@ Exports are saved to `exports/` by default. Null fields are omitted. Weights are
       "exercises": [
         {
           "name": "Bench Press (Barbell)",
-          "sets": [
-            { "weightKg": 80, "reps": 5, "completed": true },
-            { "weightKg": 85, "reps": 3, "completed": true }
-          ]
+          "completedSets": [
+            { "weightKg": 80, "reps": 5 },
+            { "weightKg": 85, "reps": 3 }
+          ],
+          "skippedSets": []
         }
       ]
     }
@@ -85,8 +86,8 @@ Exports are saved to `exports/` by default. Null fields are omitted. Weights are
 ### CSV
 
 ```
-date,workoutName,exerciseName,setNumber,weightKg,reps,rpe,distance,duration,completed
-2026-02-15T10:00:00.000Z,"Push Day","Bench Press (Barbell)",1,80,5,,,, true
+date,workoutName,exerciseName,setNumber,weightKg,reps,rpe,distance,duration,status
+2026-02-15T10:00:00.000Z,"Push Day","Bench Press (Barbell)",1,80,5,,,,completed
 ```
 
 ## Background
